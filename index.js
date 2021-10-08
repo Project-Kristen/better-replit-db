@@ -11,7 +11,7 @@ class Client {
 	 * @param {String} url Custom database URL
 	 */
 	constructor(url) {
-		this.url = url ? url : process.env.REPLIT_DB_URL;
+		this.url = url ?? process.env.REPLIT_DB_URL;
 
 		this.dbCache = {};
 
@@ -37,9 +37,7 @@ class Client {
 	 */
 	async get(key, options) {
 		let value = this.dbCache[key]
-		if (options?.raw) return JSON.stringify(value);
-
-		return value ?? null;
+		return options.?raw ? JSON.stringify(value) : value ?? null;
 	}
 
 	/**
