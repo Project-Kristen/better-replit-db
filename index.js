@@ -11,8 +11,7 @@ class Client {
 	 * @param {String} url Custom database URL
 	 */
 	constructor(url) {
-		if (url) this.url = url;
-		else this.url = process.env.REPLIT_DB_URL;
+		this.url = url ? url : process.env.REPLIT_DB_URL;
 
 		this.dbCache = {};
 
@@ -26,9 +25,7 @@ class Client {
 	 * @param {String} url Custom database URL
 	 */
 	connect(url) {
-		if (!url) {
-			throw new Error('You did no pass a URL string to connect()');
-		}
+		if (!url) throw new Error('You did no pass a URL string to connect()');
 		return new this.constructor(url);
 	}
 
@@ -40,19 +37,9 @@ class Client {
 	 */
 	async get(key, options) {
 		let value = this.dbCache[key]
-		if (options && options.raw) {
-			return JSON.stringify(value);
-		}
+		if (options?.raw) return JSON.stringify(value);
 
-		if (!value) {
-			return null;
-		}
-
-		if (value === null || value === undefined) {
-			return null;
-		}
-
-		return value;
+		return value ?? null;
 	}
 
 	/**
@@ -61,10 +48,10 @@ class Client {
 	 * @param {boolean} [options.raw=false] Makes it so that we return the raw string value. Default is false.
 	 */
 	async getNoCache(key, options) {
-		return await fetch(this.url + "/" + key)
+		return await fetch(`${this.url}/key`)
 		.then((e) => e.text())
 		.then((strValue) => {
-			if (options && options.raw) {
+			if (options?.raw) {
 				return strValue;
 			}
 
@@ -82,11 +69,7 @@ class Client {
 				);
 			}
 
-			if (value === null || value === undefined) {
-				return null;
-			}
-
-			return value;
+			return value ?? null;
 		});
 	}
 
@@ -98,20 +81,14 @@ class Client {
 	 */
 	async set(key, value, options) {
 
-		let strValue;
-
-		if (options && options.raw) {
-			strValue = value;
-		} else {
-			strValue = JSON.stringify(value);
-		}
+		let strValue = options?.raw ? value : JSON.stringify(value);
 
 		this.dbCache[key] = value;
 
 		fetch(this.url, {
 			method: "POST",
 			headers: { "Content-Type": "application/x-www-form-urlencoded" },
-			body: encodeURIComponent(key) + "=" + encodeURIComponent(strValue),
+			body: `${encodeURIComponent(key)}=${encodeURIComponent(strValue)}`,
 		});
 
 		return this;
@@ -122,8 +99,8 @@ class Client {
 	 * @param {String} key Key
 	 */
 	async delete(key) {
-		await delete this.dbCache[key];
-		fetch(this.url + "/" + key, { method: "DELETE" });
+		delete this.dbCache[key];
+		await fetch(`${this.url}/key`, { method: "DELETE" });
 		return this;
 	}
 
@@ -143,13 +120,12 @@ class Client {
 	 */
 	async listNoCache(prefix = "") {
 		return await fetch(
-		this.url + `?encode=true&prefix=${encodeURIComponent(prefix)}`
+		  `${this.url}?encode=true&prefix=${encodeURIComponent(prefix)}`
 		)
 		.then((r) => r.text())
 		.then((t) => {
-			if (t.length === 0) {
-				return [];
-			}
+			if (!t.length) return [];
+
 			return t.split("\n").map(decodeURIComponent);
 		});
 	}
