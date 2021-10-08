@@ -1,4 +1,4 @@
-const fetch = require("node-fetch");
+const { fetch } = require("undici");
 
 if (!((typeof process !== 'undefined') && 
 (process.release.name.search(/node|io.js/) !== -1))) {
