@@ -37,7 +37,7 @@ class Client {
 	 */
 	async get(key, options) {
 		let value = this.dbCache[key]
-		return options.?raw ? JSON.stringify(value) : value ?? null;
+		return options?.raw ? JSON.stringify(value) : value ?? null;
 	}
 
 	/**
